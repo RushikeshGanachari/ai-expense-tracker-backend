@@ -76,17 +76,42 @@ router.post("/", authMiddleware, async (req, res) => {
 
 
 // ✅ Get all expenses for the logged-in user
+// router.get("/", authMiddleware, async (req, res) => {
+//   try {
+//     const userId = req.user.id;
+//     const expenses = await Expense.find({ userId }).sort({ date: -1 });
+
+//     res.json({ success: true, expenses });
+//   } catch (error) {
+//     console.error("Error fetching expenses:", error);
+//     res.status(500).json({ success: false, message: "Server error" });
+//   }
+// });
 router.get("/", authMiddleware, async (req, res) => {
   try {
-    const userId = req.user.id;
+    console.log("Request received for fetching expenses.");
+    console.log("User from middleware:", req.user);
+
+    // No need to check for req.user.id if req.user is the ID itself
+    if (!req.user) {
+      return res.status(401).json({ success: false, message: "Unauthorized: No user ID" });
+    }
+
+    const userId = req.user; // Directly assign it
+    console.log("Fetching expenses for userId:", userId);
+
     const expenses = await Expense.find({ userId }).sort({ date: -1 });
+
+    console.log("Expenses fetched:", expenses);
 
     res.json({ success: true, expenses });
   } catch (error) {
     console.error("Error fetching expenses:", error);
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(500).json({ success: false, message: "Server error", error: error.message });
   }
 });
+
+
 
 // ✅ Delete an expense
 router.delete("/:id", authMiddleware, async (req, res) => {
